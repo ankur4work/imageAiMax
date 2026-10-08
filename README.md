@@ -15,17 +15,19 @@ unchanged.
 
 ---
 
-## ⚠️ Before this app can run
+## Configuration status
+
+Deployed and running at `https://imageaimax.onkra.online` — see `DEPLOYMENT.md`.
 
 | Value | Status |
 |---|---|
 | `SHOPIFY_API_KEY` / `SHOPIFY_API_SECRET` | ✅ set (ImageAi Max app credentials) |
 | `SHOPIFY_APP_URL` / `application_url` | ✅ `https://imageaimax.onkra.online`, confirmed |
-| `client_id` in `shopify.app.toml` | ✅ set |
-| `OPENAI_API_KEY` | ✅ set, and verified with a real completion **and** a real vision call against a Shopify CDN URL |
-| `DATABASE_URL` | ❌ **still a placeholder.** The app cannot start without it: `PrismaSessionStorage` checks for the `Session` table at boot and the process exits if it can't reach the database |
+| `client_id` in `shopify.app.toml` | ✅ set, and pushed to Shopify |
+| `OPENAI_API_KEY` | ✅ set (dedicated key, not shared with a sibling app). **Not yet exercised** — confirm with the "Test API key" button on the Alt text page |
+| `DATABASE_URL` | ✅ set in Coolify; `0001_init` applied. The value in `.env` is a LOCAL-dev placeholder only |
+| `SUPPORT_EMAIL` | ✅ `admin@swiftcart.live` |
 | `SHOPIFY_APP_HANDLE` | ⚠️ set to the likely value `imageai-max`, **not verified.** Confirm against a real install URL — see below |
-| `SUPPORT_EMAIL` | ⚠️ unset; `/privacy` falls back to a personal address |
 
 `DATABASE_URL` must point at a **new** Postgres database. Do not reuse PixelPro
 Max's or ImageBoost SEO's: their `Session` rows hold access tokens issued to a

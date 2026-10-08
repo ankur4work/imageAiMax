@@ -57,25 +57,41 @@ Coolify also auto-creates a second, preview-deployment copy of each variable
 preview deployments are configured; if preview deploys are ever enabled, fix
 their `is_buildtime` flags too.
 
+## Shopify app config — pushed
+
+`shopify.app.toml` (redirect URLs, scopes, webhook subscriptions incl. the
+mandatory compliance webhook) was pushed on 2026-10-08 with
+`shopify app deploy --allow-updates`, released as version
+**`imageai-max-initial`** under org **SDLC LIMITED** (`232511680`), app
+`433020043265`.
+
+Re-run that command after **any** edit to `shopify.app.toml` — editing the file
+alone changes nothing on Shopify's side. It needs `SHOPIFY_APP_AUTOMATION_TOKEN`
+in the environment and is non-interactive only when given `--allow-updates`
+(or `--no-release` / `--allow-deletes`).
+
+`Update URLs: No` in `shopify app info` is intentional — it reflects
+`automatically_update_urls_on_dev = false`, which stops `shopify app dev` from
+overwriting the production URLs with a tunnel address.
+
 ## Still required before App Store launch
 
-These are not deployable via the Coolify API and remain manual:
-
-1. **Push Shopify app config** — `shopify.app.toml` (URLs, scopes, webhook
-   subscriptions incl. the mandatory compliance webhook) only takes effect once
-   pushed to Shopify: `shopify app deploy --allow-updates` with
-   `SHOPIFY_APP_AUTOMATION_TOKEN` set. Until then the registered webhooks /
-   redirect URLs are whatever the Dev Dashboard already has.
-2. **Create the Managed Pricing plans** in the Dev Dashboard — `Free`,
+1. **Create the Managed Pricing plans** in the Dev Dashboard — `Free`,
    `Starter`, `Growth`, `Pro` (+ `… Annual`), names matching
    `app/plans.server.js` byte-for-byte. **The Free plan is mandatory** or a
    reviewer on a dev store hits an impassable pricing wall.
-3. **Confirm `SHOPIFY_APP_HANDLE`** — set to the assumed `imageai-max`. Verify
+2. **Confirm `SHOPIFY_APP_HANDLE`** — set to the assumed `imageai-max`. Verify
    against a real install URL (`/store/<store>/apps/<handle>/…`) and update the
    Coolify env var if Shopify appended a suffix. A wrong handle 404s every
    pricing CTA.
-4. **Rotate `SHOPIFY_API_SECRET`** — the secret for client_id
+3. **Rotate `SHOPIFY_API_SECRET`** — the secret for client_id
    `a12b8d4f0dedb95d87db44f6150b17f7` was shared in plaintext during setup.
-   Rotate it in the Dev Dashboard and update the Coolify env var.
-5. **Set `SUPPORT_EMAIL`** in Coolify — otherwise `/privacy` shows the inherited
-   fallback address.
+   Rotate it in the Dev Dashboard and update the Coolify env var. The
+   `SHOPIFY_APP_AUTOMATION_TOKEN` was shared the same way and should be rotated
+   with it.
+4. **Install on a dev store and walk the app** — the embedded routes
+   (optimizer, analytics, alt text, page speed, billing) need a real session and
+   cannot be exercised from outside the Shopify iframe. Use the "Test API key"
+   button on the Alt text page to confirm `OPENAI_API_KEY` reaches OpenAI: an
+   unfunded key still authenticates, so the feature silently degrades to a
+   "&lt;product title&gt; - product image" fallback rather than erroring.
