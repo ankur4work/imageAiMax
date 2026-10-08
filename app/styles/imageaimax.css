@@ -145,8 +145,17 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   Command bar — the page header. An elevated card with a filled accent
-   eyebrow pill, replacing the washed panel with a 2px left rule.
+   Command bar — the page header, as a DARK band.
+
+   This is the single biggest departure from the light flat header the app
+   was rebuilt from, and it is deliberate: the header is the one element
+   on every page, so inverting it is what makes a page recognisable as
+   this app at a glance rather than as a generic Polaris screen. Reversing
+   type out of ink also stops the header competing with the white content
+   cards below it for attention.
+
+   Everything inside it is reversed, so do not reuse the light-surface ink
+   variables here — the four colours below are the reversed set.
    ══════════════════════════════════════════════════════════════════════ */
 
 .imx-bar {
@@ -155,45 +164,65 @@
   justify-content: space-between;
   gap: 20px;
   flex-wrap: wrap;
-  background: var(--imx-surface);
-  border: var(--imx-hair);
+  background: var(--imx-ink);
+  border: 0;
   border-radius: var(--imx-r-lg);
-  box-shadow: var(--imx-shadow-sm);
-  padding: 18px 22px;
-  margin-bottom: 18px;
+  box-shadow: var(--imx-shadow-md);
+  padding: 22px 24px;
+  margin-bottom: 20px;
+  /* A solid accent spine down the leading edge, drawn as an inset shadow so it
+     follows the border radius instead of squaring off the corners. */
+  box-shadow: inset 5px 0 0 var(--imx-accent), var(--imx-shadow-md);
 }
 .imx-bar-main { min-width: 0; }
-/* The app name as a filled pill rather than bare letterspaced text: it reads as
-   a brand chip, and it is the one place the accent appears on every page. */
+/* The app name as a SOLID accent pill. On ink, the tinted pill used on light
+   surfaces has almost no contrast, so this one is filled. */
 .imx-bar-eyebrow {
   display: inline-block;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--imx-deep);
-  background: var(--imx-accent-tint);
-  border: 1px solid var(--imx-accent-border);
+  color: #fff;
+  background: var(--imx-accent);
+  border: 0;
   border-radius: var(--imx-r-pill);
-  padding: 3px 9px;
-  margin: 0 0 9px 0;
+  padding: 4px 11px;
+  margin: 0 0 11px 0;
 }
 .imx-bar-title {
-  font-size: 20px;
-  line-height: 1.2;
-  font-weight: 680;
-  letter-spacing: -0.02em;
-  color: var(--imx-ink);
+  font-size: 25px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #fff;
   margin: 0;
 }
 .imx-bar-sub {
   font-size: 13px;
-  line-height: 1.55;
-  color: var(--imx-muted);
-  margin: 5px 0 0 0;
+  line-height: 1.6;
+  color: #A1A1AA;            /* zinc-400 — reversed body copy */
+  margin: 7px 0 0 0;
   max-width: 68ch;
 }
 .imx-bar-aside { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+/* Polaris buttons in the dark band: the secondary/plain variants default to
+   dark text on transparent, which is invisible on ink. */
+.imx-bar .Polaris-Button--variantSecondary,
+.imx-bar .Polaris-Button--variantTertiary {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  color: #fff !important;
+}
+.imx-bar .Polaris-Button--variantSecondary .Polaris-Text--root,
+.imx-bar .Polaris-Button--variantTertiary .Polaris-Text--root,
+.imx-bar .Polaris-Button--variantPlain .Polaris-Text--root {
+  color: #fff !important;
+}
+.imx-bar .Polaris-Button--variantPrimary:hover:not(:disabled) {
+  background: var(--imx-accent-lift) !important;
+  border-color: var(--imx-accent-lift) !important;
+}
 
 /* ══════════════════════════════════════════════════════════════════════
    KPI strip — detached elevated cards in a grid. The previous design was
@@ -212,39 +241,33 @@
   min-width: 0;
   background: var(--imx-surface);
   border: var(--imx-hair);
+  /* A solid accent spine on the leading edge. Much louder than the 26px top
+     tick it replaces, and it gives the row of tiles a repeating rhythm that
+     reads as a group without needing the shared border the old rail used. */
+  border-left: 4px solid var(--imx-accent);
   border-radius: var(--imx-r);
   box-shadow: var(--imx-shadow-sm);
-  padding: 14px 16px 15px;
+  padding: 15px 17px 16px;
   overflow: hidden;
-}
-/* A short accent bar at the top-left of each tile. Replaces the shared left
-   border the old rail had, and keeps the accent present once per tile. */
-.imx-kpi-cell::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 16px;
-  width: 26px;
-  height: 3px;
-  border-radius: 0 0 var(--imx-r-pill) var(--imx-r-pill);
-  background: var(--imx-accent);
 }
 .imx-kpi-label {
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--imx-muted);
-  margin: 0 0 6px 0;
+  margin: 0 0 8px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Figures are the reason this component exists, so they get a real display
+   size rather than a nudged-up body size. */
 .imx-kpi-value {
-  font-size: 22px;
-  line-height: 1.15;
-  font-weight: 680;
-  letter-spacing: -0.025em;
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
   color: var(--imx-ink);
   margin: 0;
@@ -341,37 +364,40 @@
   overflow: hidden;
   margin-bottom: 18px;
 }
+/* Accent-TINTED header, not white and not grey. It ties each panel back to the
+   dark command bar above it, and makes the panel boundary obvious when two
+   panels stack with only an 18px gap between them. */
 .imx-panel-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  padding: 14px 18px;
-  background: var(--imx-surface);
-  border-bottom: var(--imx-hair);
+  padding: 15px 18px;
+  background: var(--imx-accent-tint);
+  border-bottom: 1px solid var(--imx-accent-border);
 }
-/* Sentence-case, larger, with an accent dot — the old treatment was an
+/* Sentence-case and set in the accent's deep shade — the old treatment was an
    uppercase letterspaced micro-label on a grey wash. */
 .imx-panel-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 680;
-  letter-spacing: -0.005em;
-  color: var(--imx-ink);
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  color: var(--imx-deep);
   margin: 0;
 }
 .imx-panel-title::before {
   content: "";
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
+  width: 4px;
+  height: 15px;
+  border-radius: var(--imx-r-pill);
   background: var(--imx-accent);
   flex-shrink: 0;
 }
-.imx-panel-note { font-size: 12px; color: var(--imx-muted); margin: 3px 0 0 13px; }
+.imx-panel-note { font-size: 12px; color: var(--imx-muted); margin: 4px 0 0 13px; }
 .imx-panel-body { padding: 18px; }
 .imx-panel-foot {
   padding: 12px 18px;
@@ -383,34 +409,45 @@
 
 /* ══════════════════════════════════════════════════════════════════════
    Dense table — products, alt-text rows, pages and format breakdowns are
-   all rows in a grid, not stacked cards. The head is now white with a
-   strong bottom rule (was a grey wash), and the selected row is marked
-   with a filled accent spine.
+   all rows in a grid, not stacked cards. The head is reversed out of ink,
+   body rows are zebra-striped, and the selected row is marked with a
+   filled accent spine.
+
+   Specificity matters in this block. `:nth-of-type(even)` and `:hover` are
+   both (0,2,0), so the state modifiers below are written doubled-up —
+   `.imx-tbody-row.imx-tbody-row--selected` — to reach (0,2,0) and win on
+   source order. Written singly they lose to the zebra rule and a selected
+   even-numbered row silently renders as an unselected one.
    ══════════════════════════════════════════════════════════════════════ */
 
 .imx-table { --imx-cols: 1fr; }
+/* Taller rows than the dense 9px rhythm this was rebuilt from. The table is the
+   surface merchants spend the most time scanning, so the extra 5px per row
+   buys legibility that matters more here than fitting one more row on screen. */
 .imx-tr {
   display: grid;
   grid-template-columns: var(--imx-cols);
   align-items: center;
   gap: 12px;
-  padding: 11px 18px;
+  padding: 14px 18px;
   border-bottom: var(--imx-hair);
   min-width: 0;
 }
 .imx-tr:last-child { border-bottom: 0; }
+/* Ink header row, reversed — the same inversion as the command bar, so a table
+   header and a page header read as the same system. */
 .imx-thead {
-  background: var(--imx-surface);
-  border-bottom: 1px solid var(--imx-border-strong);
-  padding-top: 9px;
-  padding-bottom: 9px;
+  background: var(--imx-ink);
+  border-bottom: 0;
+  padding-top: 11px;
+  padding-bottom: 11px;
 }
 .imx-th {
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--imx-muted);
+  color: #D4D4D8;            /* zinc-300 — reversed label */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -419,16 +456,29 @@
   background: var(--imx-surface);
   transition: background 0.15s ease, box-shadow 0.15s ease;
 }
-.imx-tbody-row:hover { background: var(--imx-hover); }
-.imx-tbody-row--selected {
+/* Zebra striping. With 8 columns the eye loses the row on a wide viewport, and
+   banding fixes that without adding another border. Scoped to :nth-of-type so
+   an expanded detail tray between two rows doesn't shift the alternation. */
+.imx-tbody-row:nth-of-type(even) { background: var(--imx-wash); }
+/* Hover is the zinc wash, NOT the accent tint — the accent tint is what marks a
+   SELECTED row, and using it for both made a hovered row indistinguishable from
+   a selected one, which matters on a page whose primary action is "optimize the
+   rows you picked". */
+.imx-tbody-row:hover { background: var(--imx-wash-2); }
+/* Doubled class names for specificity — see the note at the top of this block.
+   These must beat both the zebra stripe and :hover. */
+.imx-tbody-row.imx-tbody-row--selected {
   background: var(--imx-accent-tint);
-  box-shadow: inset 3px 0 0 var(--imx-accent);
+  box-shadow: inset 4px 0 0 var(--imx-accent);
 }
-.imx-tbody-row--active { box-shadow: inset 3px 0 0 var(--imx-accent); }
+.imx-tbody-row.imx-tbody-row--selected:hover {
+  background: var(--imx-accent-tint-2);
+}
+.imx-tbody-row.imx-tbody-row--active { box-shadow: inset 4px 0 0 var(--imx-accent); }
 /* A row that is both selected and active must not stack two different inset
    shadows — the selected rule above already paints the spine. */
-.imx-tbody-row--selected.imx-tbody-row--active {
-  box-shadow: inset 3px 0 0 var(--imx-accent-active);
+.imx-tbody-row.imx-tbody-row--selected.imx-tbody-row--active {
+  box-shadow: inset 4px 0 0 var(--imx-accent-active);
 }
 
 .imx-td { min-width: 0; font-size: 13px; color: var(--imx-body); }
@@ -890,26 +940,28 @@
 }
 .imx-launch-row:last-child { border-bottom: 0; }
 .imx-launch-row:hover { background: var(--imx-hover); }
-/* Filled accent-tint monogram tile with a rounded square footprint. */
+/* SOLID accent monogram tile, reversed out in white. The tinted version it
+   replaces read as a disabled chip next to the locked state; a solid fill makes
+   available-vs-locked legible without reading the badge beside it. */
 .imx-launch-glyph {
   width: 34px;
   height: 34px;
   border-radius: var(--imx-r-sm);
-  border: 1px solid var(--imx-accent-border);
-  background: var(--imx-accent-tint);
-  box-shadow: var(--imx-shadow-xs);
+  border: 0;
+  background: var(--imx-accent);
+  box-shadow: var(--imx-shadow-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--imx-deep);
+  letter-spacing: 0.03em;
+  color: #fff;
 }
 .imx-launch-glyph--locked {
   color: var(--imx-faint);
   background: var(--imx-wash-2);
-  border-color: var(--imx-border);
+  border: 1px solid var(--imx-border);
   box-shadow: none;
 }
 .imx-launch-name {
@@ -1037,18 +1089,20 @@
   color: var(--imx-body);
 }
 .imx-page-inner { max-width: 1000px; margin: 0 auto; }
+/* Solid accent pill, matching the brand chip in the admin command bar so the
+   public pages and the embedded app read as one product. */
 .imx-page-eyebrow {
   display: inline-block;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--imx-deep);
-  background: var(--imx-accent-tint);
-  border: 1px solid var(--imx-accent-border);
+  color: #fff;
+  background: var(--imx-accent);
+  border: 0;
   border-radius: var(--imx-r-pill);
-  padding: 4px 11px;
-  margin: 0 0 16px 0;
+  padding: 5px 12px;
+  margin: 0 0 18px 0;
 }
 .imx-page-h1 {
   font-size: 34px;
@@ -1063,6 +1117,7 @@
 .imx-matrix-wrap {
   background: var(--imx-surface);
   border: var(--imx-hair);
+  border-top: 5px solid var(--imx-accent);
   border-radius: var(--imx-r-lg);
   box-shadow: var(--imx-shadow-md);
   overflow: hidden;
@@ -1125,9 +1180,13 @@
 
 /* ── Prose — the public privacy page and the marketing landing page ── */
 
+/* The public prose card. A solid accent cap across the top edge is the one
+   piece of brand on an otherwise text-only page — without it the landing and
+   privacy pages are indistinguishable from any other white-card document. */
 .imx-prose {
   background: var(--imx-surface);
   border: var(--imx-hair);
+  border-top: 5px solid var(--imx-accent);
   border-radius: var(--imx-r-lg);
   box-shadow: var(--imx-shadow-md);
   padding: 40px 44px;
@@ -1135,11 +1194,12 @@
   margin: 0 auto;
 }
 .imx-prose h1 {
-  font-size: 29px;
+  font-size: 34px;
   font-weight: 700;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
   color: var(--imx-ink);
-  margin: 0 0 7px 0;
+  margin: 0 0 8px 0;
 }
 .imx-prose h2 {
   font-size: 15px;
