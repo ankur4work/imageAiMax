@@ -1,28 +1,29 @@
 # ImageAi Max — deployment
 
-Target **https://imageaimax.onkra.online** on Coolify (`coolify.solnix.store`,
-VPS `173.212.233.194`).
-
-> **Status:** resource UUIDs below are filled in by the deploy step. Until then
-> they read `TBD` — do not copy UUIDs from a sibling app (PixelPro Max,
-> ImageBoost SEO); they address *that* app's container and database.
+Live at **https://imageaimax.onkra.online** on Coolify (`coolify.solnix.store`,
+VPS `173.212.233.194`). Deployed 2026-10-08. Coolify 4.3.23.
 
 ## Coolify resources
 
 | Resource | UUID | Notes |
 |---|---|---|
-| Project | `TBD` | "ImageAi Max" |
-| Environment | `TBD` | `production` |
-| Server | `TBD` | `localhost` (the Coolify host) |
-| Application | `TBD` | `imageai-max` |
-| Database | `TBD` | `imageaimax-postgres` (standalone PostgreSQL) |
+| Project | `xhobjua6tpaabgvebrebhho1` | "ImageAi Max" |
+| Environment | `ykaah0sgxml5d3xjk21wlfdp` | `production` |
+| Server | `myfwitwdjhljv0ksumbn9vqq` | `localhost` (the Coolify host) |
+| Application | `dfvfndvp91bauiwbmca9eh9w` | `imageai-max` |
+| Database | `wvlrnboj4v8orermxgefnioj` | `imageaimax-postgres` (standalone PostgreSQL) |
+
+Do **not** copy UUIDs from a sibling app (PixelPro Max, ImageBoost SEO) — they
+address *that* app's container and database, and the sibling `Session` rows hold
+access tokens issued to a different `client_id`.
 
 ## How it's wired
 
-- **Source:** GitHub repo `ankur4work/imageAiMax`, branch `main`, build pack
-  **dockerfile**. Pushing `main` does **not** auto-redeploy (no git webhook is
-  configured); trigger a deploy explicitly (Coolify UI, or
-  `POST /api/v1/deploy?uuid=<application uuid>`).
+- **Source:** public GitHub repo `ankur4work/imageAiMax`, branch `main`, build
+  pack **dockerfile**. No deploy key or GitHub App — the repo is public, so
+  Coolify clones it anonymously. Pushing `main` does **not** auto-redeploy (no
+  git webhook is configured); trigger a deploy explicitly (Coolify UI, or
+  `POST /api/v1/deploy?uuid=dfvfndvp91bauiwbmca9eh9w`).
 - **Port:** container listens on `3000`; health check `GET /healthz`.
 - **Migrations:** the container start command is `prisma migrate deploy &&
   react-router-serve` (see `Dockerfile` → `npm run docker-start`). Because the
@@ -32,12 +33,29 @@ VPS `173.212.233.194`).
   resource's **internal** hostname (the container UUID above) over Coolify's
   Docker network. It is not reachable from outside the host.
 
+- **DNS:** `imageaimax.onkra.online` must have an A record pointing at
+  `173.212.233.194`. Coolify issues the Let's Encrypt certificate only once that
+  record resolves, so a missing record shows up as a TLS failure rather than a
+  404.
+
 ## Secrets (NOT in git)
 
-Set as runtime environment variables on the `imageai-max` application in
+Set as **runtime** environment variables on the `imageai-max` application in
 Coolify: `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET`, `SHOPIFY_APP_URL`, `SCOPES`,
 `SHOPIFY_APP_HANDLE`, `DATABASE_URL`, `OPENAI_API_KEY`. The Postgres password is
 stored on the database resource in Coolify. None of these live in the repo.
+
+All seven are set with `is_buildtime = false`. Keep it that way: Coolify's
+default for a new variable is build-time **and** runtime, and a build-time
+variable is passed to `docker build` as an ARG, where it persists in the image
+layer history. Nothing in the Dockerfile needs any of these at build time —
+`prisma generate` reads only `schema.prisma`, and `react-router build` bundles
+without executing the server modules.
+
+Coolify also auto-creates a second, preview-deployment copy of each variable
+(`is_preview = true`) that keeps the platform defaults. Those are inert while no
+preview deployments are configured; if preview deploys are ever enabled, fix
+their `is_buildtime` flags too.
 
 ## Still required before App Store launch
 
