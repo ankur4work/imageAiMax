@@ -1,0 +1,1170 @@
+/* ImageAi Max — soft-elevation blue-on-zinc design system.
+ *
+ * Every colour, radius, shadow and border the app paints is declared in the
+ * :root block below and nowhere else. Keeping the palette half in variables and
+ * half in literals scattered through the rules (or inline in components) means a
+ * rebrand turns into hunting hex codes across files and always missing a few.
+ * Re-theming is editing only this block.
+ *
+ * The visual language is SOFT ELEVATION, and it is deliberately the opposite of
+ * the flat hairline system this app was rebuilt from. Depth comes from layered
+ * shadows on light surfaces; grouping comes from detached rounded cards with
+ * real gaps between them rather than from shared 1px rules; and emphasis comes
+ * from filled accent shapes and pill geometry rather than from tinted
+ * backgrounds with inset underlines. Radii are generous (10px default, 14px for
+ * containers, fully round for status pills). If you find yourself removing a
+ * shadow to "tidy" a surface, you are reverting to the previous design.
+ *
+ * Two palette rules that are easy to break:
+ *   1. --imx-info is VIOLET, not blue. The accent is blue now, so a blue
+ *      informational tag would be indistinguishable from an interactive one.
+ *   2. Shadows are tinted with the zinc ink colour, never pure black — pure
+ *      black shadows read as grey smudges against the warm zinc washes.
+ *
+ * The imx-* primitives are consumed by the routes AND by PricingTiers.jsx /
+ * privacy.jsx, so the public pages and the embedded app cannot drift apart.
+ */
+
+:root {
+  /* ── Brand ─────────────────────────────────── */
+  --imx-accent: #2563EB;          /* blue-600  — primary action, active state */
+  --imx-accent-hover: #1D4ED8;    /* blue-700                                 */
+  --imx-accent-active: #1E3A8A;   /* blue-900                                 */
+  --imx-deep: #1E40AF;            /* blue-800  — accent text on tint          */
+  --imx-accent-tint: #EFF6FF;     /* blue-50   — active segment / row select  */
+  --imx-accent-tint-2: #DBEAFE;   /* blue-100  — meter track fill, tag bg     */
+  --imx-accent-border: #BFDBFE;   /* blue-200                                 */
+  --imx-accent-lift: #60A5FA;     /* blue-400  — hover on dark surfaces only  */
+
+  /* ── Ink & neutrals (zinc) ────────────────── */
+  --imx-ink: #18181B;             /* zinc-900 — headings, figures */
+  --imx-body: #3F3F46;            /* zinc-700 — body copy         */
+  --imx-muted: #71717A;           /* zinc-500 — labels, meta      */
+  --imx-faint: #A1A1AA;           /* zinc-400 — placeholders      */
+
+  /* ── Surfaces ─────────────────────────────── */
+  --imx-surface: #FFFFFF;
+  --imx-wash: #FAFAFA;            /* zinc-50  — page wash           */
+  --imx-wash-2: #F4F4F5;          /* zinc-100 — tracks, inset fills */
+  --imx-hover: #FAFAFA;
+
+  /* ── Borders ──────────────────────────────── */
+  --imx-border: #E4E4E7;          /* zinc-200 — the hairline  */
+  --imx-border-strong: #D4D4D8;   /* zinc-300 — emphasis      */
+
+  /* ── Geometry ─────────────────────────────── */
+  --imx-r: 10px;                  /* the default radius          */
+  --imx-r-sm: 6px;                /* inputs, thumbs, small chips */
+  --imx-r-lg: 14px;               /* containers, cards           */
+  --imx-r-pill: 999px;            /* tags, segmented control     */
+  --imx-hair: 1px solid var(--imx-border);
+
+  /* ── Elevation ────────────────────────────── */
+  /* Tinted with the zinc ink, never pure black. */
+  --imx-shadow-xs: 0 1px 2px rgba(24, 24, 27, 0.05);
+  --imx-shadow-sm: 0 1px 3px rgba(24, 24, 27, 0.07), 0 1px 2px rgba(24, 24, 27, 0.04);
+  --imx-shadow: 0 2px 8px rgba(24, 24, 27, 0.07), 0 1px 2px rgba(24, 24, 27, 0.05);
+  --imx-shadow-md: 0 6px 18px rgba(24, 24, 27, 0.09), 0 2px 5px rgba(24, 24, 27, 0.05);
+  --imx-shadow-lg: 0 16px 38px rgba(24, 24, 27, 0.15), 0 4px 10px rgba(24, 24, 27, 0.07);
+  --imx-ring: 0 0 0 3px rgba(37, 99, 235, 0.18);
+
+  /* ── Status ───────────────────────────────── */
+  --imx-ok: #15803D;              /* green-700 */
+  --imx-ok-bg: #F0FDF4;
+  --imx-ok-border: #BBF7D0;
+  --imx-warn: #B45309;            /* amber-700 */
+  --imx-warn-bg: #FFFBEB;
+  --imx-warn-border: #FDE68A;
+  --imx-bad: #B91C1C;             /* red-700 */
+  --imx-bad-bg: #FEF2F2;
+  --imx-bad-border: #FECACA;
+  --imx-info: #6D28D9;            /* violet-700 — NOT blue; see header note */
+  --imx-info-bg: #F5F3FF;
+  --imx-info-border: #DDD6FE;
+
+  /* ── Disabled state ───────────────────────── */
+  --imx-disabled-bg: #E4E4E7;
+  --imx-disabled-fg: #A1A1AA;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Polaris overrides — give the platform components the same elevation
+   and radius as the imx-* primitives, so a Polaris Button next to an
+   imx-tier-cta doesn't look like it came from a different app.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.Polaris-Button--variantPrimary {
+  background: var(--imx-accent) !important;
+  border-color: var(--imx-accent) !important;
+  box-shadow: var(--imx-shadow-sm) !important;
+  border-radius: var(--imx-r) !important;
+}
+.Polaris-Button--variantPrimary:hover:not(:disabled) {
+  background: var(--imx-accent-hover) !important;
+  border-color: var(--imx-accent-hover) !important;
+  box-shadow: var(--imx-shadow) !important;
+}
+.Polaris-Button--variantPrimary:active:not(:disabled) {
+  background: var(--imx-accent-active) !important;
+  box-shadow: var(--imx-shadow-xs) !important;
+}
+.Polaris-Button--variantPrimary:focus-visible {
+  box-shadow: var(--imx-ring) !important;
+}
+/* A disabled button must LOOK disabled. The rule above sets the accent fill on
+   every primary button, which would otherwise override Polaris's own disabled
+   styling — leaving a button that cannot be clicked looking exactly like one
+   that can, so clicking it appears to do nothing. */
+.Polaris-Button--variantPrimary:disabled,
+.Polaris-Button--variantPrimary[aria-disabled="true"] {
+  background: var(--imx-disabled-bg) !important;
+  border-color: var(--imx-disabled-bg) !important;
+  color: var(--imx-disabled-fg) !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+}
+.Polaris-Button--variantPrimary:disabled .Polaris-Text--root,
+.Polaris-Button--variantPrimary[aria-disabled="true"] .Polaris-Text--root {
+  color: inherit !important;
+}
+
+/* Secondary/tertiary buttons pick up the radius so the whole button set agrees. */
+.Polaris-Button { border-radius: var(--imx-r) !important; }
+
+.Polaris-Link { color: var(--imx-accent) !important; }
+.Polaris-Link:hover { color: var(--imx-accent-hover) !important; }
+
+.Polaris-TextField__Input:focus {
+  border-color: var(--imx-accent) !important;
+  box-shadow: var(--imx-ring) !important;
+}
+
+.Polaris-Checkbox__Input:checked + .Polaris-Checkbox__Backdrop {
+  background: var(--imx-accent) !important;
+  border-color: var(--imx-accent) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Command bar — the page header. An elevated card with a filled accent
+   eyebrow pill, replacing the washed panel with a 2px left rule.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  background: var(--imx-surface);
+  border: var(--imx-hair);
+  border-radius: var(--imx-r-lg);
+  box-shadow: var(--imx-shadow-sm);
+  padding: 18px 22px;
+  margin-bottom: 18px;
+}
+.imx-bar-main { min-width: 0; }
+/* The app name as a filled pill rather than bare letterspaced text: it reads as
+   a brand chip, and it is the one place the accent appears on every page. */
+.imx-bar-eyebrow {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--imx-deep);
+  background: var(--imx-accent-tint);
+  border: 1px solid var(--imx-accent-border);
+  border-radius: var(--imx-r-pill);
+  padding: 3px 9px;
+  margin: 0 0 9px 0;
+}
+.imx-bar-title {
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 680;
+  letter-spacing: -0.02em;
+  color: var(--imx-ink);
+  margin: 0;
+}
+.imx-bar-sub {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--imx-muted);
+  margin: 5px 0 0 0;
+  max-width: 68ch;
+}
+.imx-bar-aside { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   KPI strip — detached elevated cards in a grid. The previous design was
+   one bordered rail with hairline-separated cells; this is the same data
+   as individual tiles, each with its own accent top rule.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-kpi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.imx-kpi-cell {
+  position: relative;
+  min-width: 0;
+  background: var(--imx-surface);
+  border: var(--imx-hair);
+  border-radius: var(--imx-r);
+  box-shadow: var(--imx-shadow-sm);
+  padding: 14px 16px 15px;
+  overflow: hidden;
+}
+/* A short accent bar at the top-left of each tile. Replaces the shared left
+   border the old rail had, and keeps the accent present once per tile. */
+.imx-kpi-cell::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 16px;
+  width: 26px;
+  height: 3px;
+  border-radius: 0 0 var(--imx-r-pill) var(--imx-r-pill);
+  background: var(--imx-accent);
+}
+.imx-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--imx-muted);
+  margin: 0 0 6px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.imx-kpi-value {
+  font-size: 22px;
+  line-height: 1.15;
+  font-weight: 680;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+  color: var(--imx-ink);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.imx-kpi-value--ok { color: var(--imx-ok); }
+.imx-kpi-value--bad { color: var(--imx-bad); }
+.imx-kpi-note {
+  font-size: 11px;
+  color: var(--imx-muted);
+  margin: 4px 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* A word-valued KPI ("Growth", "On") would read as a broken headline at the
+   figure size, so it gets the tag treatment and keeps the row on one baseline. */
+.imx-kpi-tagline { min-height: 26px; display: flex; align-items: center; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Segmented control — a pill track with a FILLED active segment. The old
+   design tinted the active segment and underlined it with an inset rule;
+   this one inverts it to solid accent on white text.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-seg {
+  display: inline-flex;
+  gap: 3px;
+  border: var(--imx-hair);
+  border-radius: var(--imx-r-pill);
+  background: var(--imx-wash-2);
+  padding: 3px;
+  box-shadow: inset 0 1px 2px rgba(24, 24, 27, 0.04);
+}
+.imx-seg-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--imx-body);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 1;
+  padding: 7px 13px;
+  border-radius: var(--imx-r-pill);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.imx-seg-btn:hover:not(:disabled):not([aria-pressed="true"]) {
+  background: var(--imx-surface);
+  color: var(--imx-ink);
+  box-shadow: var(--imx-shadow-xs);
+}
+.imx-seg-btn[aria-pressed="true"] {
+  background: var(--imx-accent);
+  color: #fff;
+  font-weight: 650;
+  box-shadow: var(--imx-shadow-sm);
+}
+.imx-seg-btn:focus-visible { outline: none; box-shadow: var(--imx-ring); }
+.imx-seg-btn:disabled { color: var(--imx-disabled-fg); cursor: not-allowed; }
+.imx-seg-count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.72;
+  margin-left: 5px;
+}
+/* On the filled segment the count needs its own contrast, not 72% of white. */
+.imx-seg-btn[aria-pressed="true"] .imx-seg-count { opacity: 0.85; }
+
+/* A labelled control group: micro-label above the control, not beside it. */
+.imx-field { display: inline-flex; flex-direction: column; gap: 7px; }
+.imx-field-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--imx-muted);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Panel — an elevated rounded card. Replaces Polaris <Card> where the
+   card's own padding would fight the dense table inside it, but unlike
+   the previous flat panel it carries real elevation and a white header.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-panel {
+  background: var(--imx-surface);
+  border: var(--imx-hair);
+  border-radius: var(--imx-r-lg);
+  box-shadow: var(--imx-shadow-sm);
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+.imx-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  background: var(--imx-surface);
+  border-bottom: var(--imx-hair);
+}
+/* Sentence-case, larger, with an accent dot — the old treatment was an
+   uppercase letterspaced micro-label on a grey wash. */
+.imx-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 680;
+  letter-spacing: -0.005em;
+  color: var(--imx-ink);
+  margin: 0;
+}
+.imx-panel-title::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--imx-accent);
+  flex-shrink: 0;
+}
+.imx-panel-note { font-size: 12px; color: var(--imx-muted); margin: 3px 0 0 13px; }
+.imx-panel-body { padding: 18px; }
+.imx-panel-foot {
+  padding: 12px 18px;
+  background: var(--imx-wash);
+  border-top: var(--imx-hair);
+  font-size: 12px;
+  color: var(--imx-muted);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Dense table — products, alt-text rows, pages and format breakdowns are
+   all rows in a grid, not stacked cards. The head is now white with a
+   strong bottom rule (was a grey wash), and the selected row is marked
+   with a filled accent spine.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-table { --imx-cols: 1fr; }
+.imx-tr {
+  display: grid;
+  grid-template-columns: var(--imx-cols);
+  align-items: center;
+  gap: 12px;
+  padding: 11px 18px;
+  border-bottom: var(--imx-hair);
+  min-width: 0;
+}
+.imx-tr:last-child { border-bottom: 0; }
+.imx-thead {
+  background: var(--imx-surface);
+  border-bottom: 1px solid var(--imx-border-strong);
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+.imx-th {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--imx-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.imx-tbody-row {
+  background: var(--imx-surface);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.imx-tbody-row:hover { background: var(--imx-hover); }
+.imx-tbody-row--selected {
+  background: var(--imx-accent-tint);
+  box-shadow: inset 3px 0 0 var(--imx-accent);
+}
+.imx-tbody-row--active { box-shadow: inset 3px 0 0 var(--imx-accent); }
+/* A row that is both selected and active must not stack two different inset
+   shadows — the selected rule above already paints the spine. */
+.imx-tbody-row--selected.imx-tbody-row--active {
+  box-shadow: inset 3px 0 0 var(--imx-accent-active);
+}
+
+.imx-td { min-width: 0; font-size: 13px; color: var(--imx-body); }
+.imx-td--num { font-variant-numeric: tabular-nums; text-align: right; }
+.imx-td--right { display: flex; justify-content: flex-end; }
+.imx-td-strong {
+  font-size: 13px;
+  font-weight: 620;
+  color: var(--imx-ink);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.imx-td-meta {
+  font-size: 11px;
+  color: var(--imx-muted);
+  margin: 2px 0 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.imx-td-ok { color: var(--imx-ok); font-weight: 620; }
+
+/* Column templates. Declared here rather than inline so the header row and the
+   body rows can never disagree about how many columns there are. */
+.imx-table--products {
+  --imx-cols: 26px 36px minmax(0, 1fr) 62px 86px 104px 132px 120px;
+}
+.imx-table--alt {
+  --imx-cols: 26px 44px minmax(0, 1.1fr) minmax(0, 1.4fr) 64px 104px;
+}
+.imx-table--pages {
+  --imx-cols: minmax(0, 1fr) 60px 84px 84px 90px 92px;
+}
+.imx-table--formats {
+  --imx-cols: 72px 72px minmax(120px, 1fr) 92px 60px;
+}
+.imx-table--vitals {
+  --imx-cols: minmax(0, 1fr) 110px 150px;
+}
+
+/* Narrow viewports: drop the columns that are nice-to-have before the ones that
+   are load-bearing. `display:none` on a grid child removes it from the flow, so
+   the template is shortened to match in each step. */
+@media (max-width: 1040px) {
+  .imx-table--products { --imx-cols: 26px 36px minmax(0, 1fr) 86px 132px 120px; }
+  .imx-table--products .imx-col-images,
+  .imx-table--products .imx-col-saved { display: none; }
+  .imx-table--pages { --imx-cols: minmax(0, 1fr) 60px 90px 92px; }
+  .imx-table--pages .imx-col-before,
+  .imx-table--pages .imx-col-after { display: none; }
+}
+@media (max-width: 780px) {
+  .imx-table--products { --imx-cols: 26px minmax(0, 1fr) 132px; }
+  .imx-table--products .imx-col-thumb,
+  .imx-table--products .imx-col-size,
+  .imx-table--products .imx-col-action { display: none; }
+  .imx-table--alt { --imx-cols: 26px minmax(0, 1fr) minmax(0, 1.2fr) 104px; }
+  .imx-table--alt .imx-col-thumb,
+  .imx-table--alt .imx-col-score { display: none; }
+}
+
+/* Inline editable cell. A Polaris TextField carries a label slot, help-text
+   slot and its own vertical rhythm, all of which fight a 44px table row — this
+   is the same control stripped to the field itself so the caption can be edited
+   in place rather than in a panel below the list. */
+.imx-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--imx-ink);
+  background: var(--imx-surface);
+  border: var(--imx-hair);
+  border-radius: var(--imx-r-sm);
+  box-shadow: inset 0 1px 2px rgba(24, 24, 27, 0.04);
+  padding: 7px 9px;
+  resize: vertical;
+  min-height: 42px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.imx-input::placeholder { color: var(--imx-faint); }
+.imx-input:focus {
+  outline: none;
+  border-color: var(--imx-accent);
+  box-shadow: var(--imx-ring);
+}
+.imx-input:disabled {
+  background: var(--imx-wash-2);
+  color: var(--imx-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Native select, restyled. A segmented control is the right shape for four
+   fixed choices; it is the wrong shape for "pick one of 500 product pages", so
+   that one stays a select — just not a Polaris-chromed one. */
+.imx-select {
+  appearance: none;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--imx-ink);
+  background: var(--imx-surface);
+  border: var(--imx-hair);
+  border-radius: var(--imx-r);
+  box-shadow: var(--imx-shadow-xs);
+  padding: 9px 30px 9px 12px;
+  min-width: 220px;
+  max-width: 100%;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  /* Caret drawn as a background gradient pair so no SVG asset or icon font is
+     needed — the strict-CSP public pages can't fetch one anyway. */
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--imx-muted) 50%),
+    linear-gradient(135deg, var(--imx-muted) 50%, transparent 50%);
+  background-position: calc(100% - 17px) 52%, calc(100% - 12px) 52%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+.imx-select:hover:not(:disabled) { border-color: var(--imx-border-strong); }
+.imx-select:focus {
+  outline: none;
+  border-color: var(--imx-accent);
+  box-shadow: var(--imx-ring);
+}
+.imx-select:disabled {
+  background-color: var(--imx-wash-2);
+  color: var(--imx-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Row thumbnail — rounded, elevated, no Polaris Thumbnail chrome. */
+.imx-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--imx-r-sm);
+  border: var(--imx-hair);
+  box-shadow: var(--imx-shadow-xs);
+  object-fit: cover;
+  display: block;
+  background: var(--imx-wash-2);
+}
+.imx-thumb--lg { width: 44px; height: 44px; border-radius: var(--imx-r); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Meter — a rounded inline bar. Used in table rows where a Polaris
+   ProgressBar is too tall and carries its own margins.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-meter { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.imx-meter-track {
+  flex: 1 1 auto;
+  height: 6px;
+  min-width: 36px;
+  border-radius: var(--imx-r-pill);
+  background: var(--imx-wash-2);
+  box-shadow: inset 0 1px 2px rgba(24, 24, 27, 0.06);
+  overflow: hidden;
+}
+.imx-meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--imx-r-pill);
+  background: var(--imx-accent);
+  transition: width 0.3s ease;
+}
+.imx-meter-fill--ok { background: var(--imx-ok); }
+.imx-meter-fill--warn { background: var(--imx-warn); }
+.imx-meter-fill--bad { background: var(--imx-bad); }
+.imx-meter-value {
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--imx-body);
+  width: 34px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* A wider, labelled meter for the quota rail in the command bar area. */
+.imx-quota { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.imx-quota .imx-meter-track { height: 8px; min-width: 180px; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Tags & dots — fully rounded pills. Used alongside (not instead of)
+   Polaris Badge: Badge stays for platform-standard statuses.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1;
+  padding: 5px 10px;
+  border-radius: var(--imx-r-pill);
+  border: 1px solid var(--imx-border);
+  background: var(--imx-wash-2);
+  color: var(--imx-body);
+  white-space: nowrap;
+}
+.imx-tag--brand { background: var(--imx-accent-tint); color: var(--imx-deep); border-color: var(--imx-accent-border); }
+.imx-tag--ok { background: var(--imx-ok-bg); color: var(--imx-ok); border-color: var(--imx-ok-border); }
+.imx-tag--warn { background: var(--imx-warn-bg); color: var(--imx-warn); border-color: var(--imx-warn-border); }
+.imx-tag--bad { background: var(--imx-bad-bg); color: var(--imx-bad); border-color: var(--imx-bad-border); }
+.imx-tag--info { background: var(--imx-info-bg); color: var(--imx-info); border-color: var(--imx-info-border); }
+
+.imx-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--imx-border-strong);
+  display: inline-block;
+}
+/* A faint ring lifts the dot off a tinted tag background. */
+.imx-dot--ok { background: var(--imx-ok); box-shadow: 0 0 0 2px var(--imx-ok-bg); }
+.imx-dot--warn { background: var(--imx-warn); box-shadow: 0 0 0 2px var(--imx-warn-bg); }
+.imx-dot--bad { background: var(--imx-bad); box-shadow: 0 0 0 2px var(--imx-bad-bg); }
+.imx-dot--info { background: var(--imx-info); box-shadow: 0 0 0 2px var(--imx-info-bg); }
+.imx-dot--brand { background: var(--imx-accent); box-shadow: 0 0 0 2px var(--imx-accent-tint); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Image chips — per-image run state. Replaces a row of Polaris
+   Thumbnails in Boxes; these are small rounded squares in a tight wrap
+   grid so a 25-image product is a glanceable block rather than a scroll.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.imx-chip {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--imx-r-sm);
+  border: var(--imx-hair);
+  box-shadow: var(--imx-shadow-xs);
+  background: var(--imx-wash-2);
+  overflow: hidden;
+}
+.imx-chip img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.imx-chip--done { border-color: var(--imx-ok); }
+.imx-chip--failed { border-color: var(--imx-bad); }
+.imx-chip--working { border-color: var(--imx-accent); box-shadow: var(--imx-ring); }
+/* A bottom bar rather than a full overlay: the merchant can still see which
+   image it is while the state is unambiguous at 32px. */
+.imx-chip::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 4px;
+  background: transparent;
+}
+.imx-chip--done::after { background: var(--imx-ok); }
+.imx-chip--failed::after { background: var(--imx-bad); }
+.imx-chip--working::after {
+  background: var(--imx-accent);
+  animation: imx-pulse 1s ease-in-out infinite;
+}
+.imx-chip--skipped::after { background: var(--imx-border-strong); }
+@keyframes imx-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Run rail — the live optimization strip. An elevated card with a tinted
+   header, replacing the thin bar with a 2px left rule.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-run {
+  background: var(--imx-surface);
+  border: 1px solid var(--imx-accent-border);
+  border-radius: var(--imx-r-lg);
+  box-shadow: var(--imx-shadow);
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+.imx-run-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 13px 18px;
+  background: var(--imx-accent-tint);
+  border-bottom: 1px solid var(--imx-accent-border);
+}
+.imx-run-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 680;
+  color: var(--imx-deep);
+  margin: 0;
+}
+/* A pulsing dot marks the run as live without needing a spinner component. */
+.imx-run-title::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--imx-accent);
+  flex-shrink: 0;
+  animation: imx-pulse 1.1s ease-in-out infinite;
+}
+.imx-run-pct {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: var(--imx-deep);
+}
+.imx-run-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 11px; }
+.imx-run-line { font-size: 12px; color: var(--imx-muted); margin: 0; }
+.imx-run-line strong { color: var(--imx-ink); font-weight: 650; }
+.imx-run-log { display: flex; flex-direction: column; gap: 4px; }
+.imx-run-log-item {
+  font-size: 11px;
+  color: var(--imx-muted);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.imx-run-log-item::before { content: "✓ "; color: var(--imx-ok); font-weight: 700; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Sticky bulk-action bar — replaces the inline "Optimize Selected" button
+   that scrolled away with the toolbar. Floating pill, strongly elevated.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-actionbar {
+  position: sticky;
+  bottom: 14px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: var(--imx-ink);
+  border-radius: var(--imx-r-lg);
+  box-shadow: var(--imx-shadow-lg);
+  padding: 13px 18px;
+  margin-top: 18px;
+}
+.imx-actionbar-text {
+  font-size: 13px;
+  font-weight: 620;
+  color: #fff;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.imx-actionbar-note { font-size: 12px; color: #A1A1AA; margin: 3px 0 0 0; }
+.imx-actionbar-actions { display: flex; align-items: center; gap: 9px; }
+/* The bar is dark, so the accent button needs to lift off it rather than sink
+   in — and the plain "clear" control has to be legible on dark too. */
+.imx-actionbar .Polaris-Button--variantPrimary {
+  background: var(--imx-accent) !important;
+  border-color: var(--imx-accent) !important;
+}
+.imx-actionbar .Polaris-Button--variantPrimary:hover:not(:disabled) {
+  background: var(--imx-accent-lift) !important;
+  border-color: var(--imx-accent-lift) !important;
+}
+.imx-btn-ghost {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--imx-r);
+  color: #E4E4E7;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 550;
+  padding: 8px 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.imx-btn-ghost:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Expanded row detail — inline, inside the table, instead of a modal or
+   a separate card per product. Now an inset tinted tray.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-expand {
+  background: var(--imx-wash);
+  border-bottom: var(--imx-hair);
+  box-shadow: inset 0 1px 3px rgba(24, 24, 27, 0.05);
+  padding: 14px 18px 16px 60px;
+}
+.imx-expand-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 12px 18px;
+  margin-bottom: 13px;
+}
+/* Each metric sits on its own small white card inside the tray, so the tray
+   reads as a group of figures rather than a wall of label/value pairs. */
+.imx-expand-k {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--imx-muted);
+  margin: 0 0 4px 0;
+}
+.imx-expand-v {
+  font-size: 13px;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  color: var(--imx-ink);
+  margin: 0;
+}
+.imx-disclose {
+  appearance: none;
+  background: var(--imx-accent-tint);
+  border: 1px solid var(--imx-accent-border);
+  border-radius: var(--imx-r-pill);
+  padding: 4px 11px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--imx-deep);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.imx-disclose:hover { background: var(--imx-accent-tint-2); border-color: var(--imx-accent); }
+.imx-disclose:focus-visible { outline: none; box-shadow: var(--imx-ring); }
+.imx-disclose-caret { font-size: 9px; line-height: 1; }
+
+@media (max-width: 780px) {
+  .imx-expand { padding-left: 18px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Launchpad list — the home page tool index. Rows with a filled accent
+   monogram tile, replacing the bordered no-fill glyph square.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-launch { display: flex; flex-direction: column; }
+.imx-launch-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 18px;
+  border-bottom: var(--imx-hair);
+  background: var(--imx-surface);
+  transition: background 0.15s ease;
+}
+.imx-launch-row:last-child { border-bottom: 0; }
+.imx-launch-row:hover { background: var(--imx-hover); }
+/* Filled accent-tint monogram tile with a rounded square footprint. */
+.imx-launch-glyph {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--imx-r-sm);
+  border: 1px solid var(--imx-accent-border);
+  background: var(--imx-accent-tint);
+  box-shadow: var(--imx-shadow-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--imx-deep);
+}
+.imx-launch-glyph--locked {
+  color: var(--imx-faint);
+  background: var(--imx-wash-2);
+  border-color: var(--imx-border);
+  box-shadow: none;
+}
+.imx-launch-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 4px 0;
+  font-size: 13px;
+  font-weight: 680;
+  color: var(--imx-ink);
+}
+.imx-launch-desc { font-size: 12px; color: var(--imx-muted); margin: 0; }
+
+@media (max-width: 700px) {
+  .imx-launch-row { grid-template-columns: 34px minmax(0, 1fr); }
+  .imx-launch-row > :last-child { grid-column: 1 / -1; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Insight list — replaces a stack of full-width Polaris Banners, which
+   read as four errors rather than four notes.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-notes { display: flex; flex-direction: column; }
+.imx-note {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 13px;
+  padding: 14px 18px;
+  border-bottom: var(--imx-hair);
+}
+.imx-note:last-child { border-bottom: 0; }
+.imx-note-dot { margin-top: 5px; }
+.imx-note-title { font-size: 13px; font-weight: 680; color: var(--imx-ink); margin: 0 0 4px 0; }
+.imx-note-body { font-size: 12px; line-height: 1.55; color: var(--imx-body); margin: 0; }
+
+@media (max-width: 700px) {
+  .imx-note { grid-template-columns: 8px minmax(0, 1fr); }
+  .imx-note > :last-child { grid-column: 2; margin-top: 7px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Vitals grid — Core Web Vitals cells. Detached elevated cards with a
+   rating dot, instead of a 1px-gap mortar grid.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-vitals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.imx-vital {
+  background: var(--imx-surface);
+  border: var(--imx-hair);
+  border-radius: var(--imx-r);
+  box-shadow: var(--imx-shadow-sm);
+  padding: 14px 16px;
+}
+.imx-vital-k {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--imx-muted);
+  margin: 0 0 7px 0;
+}
+.imx-vital-v {
+  font-size: 20px;
+  font-weight: 680;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+  color: var(--imx-ink);
+  margin: 0;
+}
+.imx-vital-r { font-size: 11px; margin: 4px 0 0 0; color: var(--imx-muted); }
+
+/* Score ring replacement: a big figure with a rating tag beside it. */
+.imx-score { display: flex; align-items: baseline; gap: 11px; }
+.imx-score-n {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+  color: var(--imx-ink);
+}
+.imx-score-d { font-size: 14px; color: var(--imx-muted); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Empty / loading states
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-empty { padding: 48px 24px; text-align: center; }
+.imx-empty-title { font-size: 14px; font-weight: 680; color: var(--imx-ink); margin: 0 0 6px 0; }
+.imx-empty-body { font-size: 13px; color: var(--imx-muted); margin: 0 auto; max-width: 46ch; }
+
+/* Skeleton rows, so the table's shape is visible while /api/catalog answers
+   instead of a lone centred spinner that gives no sense of what's coming. */
+.imx-skel {
+  height: 11px;
+  border-radius: var(--imx-r-pill);
+  background: linear-gradient(90deg, var(--imx-wash-2) 0%, #EAEAEC 50%, var(--imx-wash-2) 100%);
+  background-size: 200% 100%;
+  animation: imx-shimmer 1.3s linear infinite;
+}
+@keyframes imx-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Public pages — the pricing matrix and the prose pages
+   ══════════════════════════════════════════════════════════════════════ */
+
+.imx-page {
+  min-height: 100vh;
+  background: var(--imx-wash);
+  padding: 56px 24px;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--imx-body);
+}
+.imx-page-inner { max-width: 1000px; margin: 0 auto; }
+.imx-page-eyebrow {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--imx-deep);
+  background: var(--imx-accent-tint);
+  border: 1px solid var(--imx-accent-border);
+  border-radius: var(--imx-r-pill);
+  padding: 4px 11px;
+  margin: 0 0 16px 0;
+}
+.imx-page-h1 {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.14;
+  color: var(--imx-ink);
+  margin: 0 0 10px 0;
+}
+.imx-page-lead { font-size: 15px; line-height: 1.6; color: var(--imx-muted); margin: 0 0 30px 0; max-width: 62ch; }
+
+.imx-matrix-wrap {
+  background: var(--imx-surface);
+  border: var(--imx-hair);
+  border-radius: var(--imx-r-lg);
+  box-shadow: var(--imx-shadow-md);
+  overflow: hidden;
+  overflow-x: auto;
+}
+.imx-matrix { width: 100%; border-collapse: collapse; min-width: 680px; }
+.imx-matrix th, .imx-matrix td {
+  padding: 13px 16px;
+  text-align: left;
+  border-bottom: var(--imx-hair);
+  font-size: 13px;
+  vertical-align: middle;
+}
+.imx-matrix tr:last-child th, .imx-matrix tr:last-child td { border-bottom: 0; }
+.imx-matrix thead th { background: var(--imx-surface); vertical-align: top; border-bottom: 1px solid var(--imx-border-strong); }
+.imx-matrix tbody th {
+  font-weight: 550;
+  color: var(--imx-body);
+  width: 34%;
+}
+.imx-matrix td { text-align: center; font-variant-numeric: tabular-nums; }
+/* The recommended column is marked by a tinted stripe and a filled accent cap,
+   not by being physically lifted out of the table. */
+.imx-matrix .imx-col-pop { background: var(--imx-accent-tint); }
+.imx-matrix thead .imx-col-pop { box-shadow: inset 0 3px 0 var(--imx-accent); }
+/* "Most popular" badge above the tier name in the matrix header. */
+.imx-tier-flag { margin: 0 0 7px 0; }
+.imx-tier-name { font-size: 15px; font-weight: 700; color: var(--imx-ink); margin: 0 0 3px 0; }
+.imx-tier-tag { font-size: 11px; color: var(--imx-muted); margin: 0 0 12px 0; }
+.imx-tier-cta {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+  font-size: 13px;
+  font-weight: 650;
+  padding: 9px 14px;
+  border-radius: var(--imx-r);
+  border: 1px solid var(--imx-border-strong);
+  background: var(--imx-surface);
+  box-shadow: var(--imx-shadow-xs);
+  color: var(--imx-body);
+  transition: background 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.imx-tier-cta:hover { background: var(--imx-wash-2); box-shadow: var(--imx-shadow-sm); }
+.imx-tier-cta--primary {
+  background: var(--imx-accent);
+  border-color: var(--imx-accent);
+  color: #fff;
+  box-shadow: var(--imx-shadow-sm);
+}
+.imx-tier-cta--primary:hover {
+  background: var(--imx-accent-hover);
+  border-color: var(--imx-accent-hover);
+  box-shadow: var(--imx-shadow-md);
+}
+.imx-yes { color: var(--imx-ok); font-weight: 700; }
+.imx-no { color: var(--imx-faint); }
+.imx-matrix-foot { font-size: 12px; color: var(--imx-muted); margin: 20px 0 0 0; }
+
+/* ── Prose — the public privacy page and the marketing landing page ── */
+
+.imx-prose {
+  background: var(--imx-surface);
+  border: var(--imx-hair);
+  border-radius: var(--imx-r-lg);
+  box-shadow: var(--imx-shadow-md);
+  padding: 40px 44px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.imx-prose h1 {
+  font-size: 29px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--imx-ink);
+  margin: 0 0 7px 0;
+}
+.imx-prose h2 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--imx-ink);
+  margin: 30px 0 9px 0;
+  padding-top: 16px;
+  border-top: var(--imx-hair);
+}
+.imx-prose p { font-size: 15px; line-height: 1.68; margin: 0 0 14px 0; }
+.imx-prose ul { margin: 0 0 14px 0; padding-left: 20px; }
+.imx-prose li { font-size: 15px; line-height: 1.68; margin-bottom: 9px; }
+.imx-prose a { color: var(--imx-accent); }
+.imx-prose code {
+  background: var(--imx-wash-2);
+  border: var(--imx-hair);
+  padding: 2px 6px;
+  border-radius: var(--imx-r-sm);
+  font-size: 13px;
+}
+.imx-prose-meta { font-size: 13px; color: var(--imx-muted); margin: 0 0 26px 0; }
+
+@media (max-width: 640px) {
+  .imx-prose { padding: 28px 22px; }
+  .imx-page { padding: 36px 16px; }
+  .imx-page-h1 { font-size: 27px; }
+}
