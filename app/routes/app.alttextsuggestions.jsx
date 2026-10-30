@@ -100,19 +100,25 @@ async function verifyOpenAIKey() {
 }
 
 // Safety cap so a pathologically large catalog can't make the loader run
-// forever. 200 pages x 50 products = up to 10,000 products.
-const MAX_PRODUCT_PAGES = 200;
+// forever. 1000 pages x 10 products = up to 10,000 products.
+const MAX_PRODUCT_PAGES = 1000;
 
+// Shopify caps a single query's *requested* cost at 1,000 points, and nested
+// connections multiply: products(first: 50) × media(first: 250) requests
+// ~25,000 points and fails outright with MAX_COST_EXCEEDED. Budget: per
+// product ≈ 1 + featuredImage 1 + media(2 + 40×2) = 84, × 10 products ≈ 842.
+// The caption is applied to at most the first 40 images of a product — plenty
+// in practice, and the alternative is the page never loading at all.
 const PRODUCTS_QUERY = `#graphql
   query GetProductsWithImages($cursor: String) {
-    products(first: 50, after: $cursor) {
+    products(first: 10, after: $cursor) {
       pageInfo { hasNextPage endCursor }
       edges {
         node {
           id
           title
           featuredImage { url altText }
-          media(first: 250) {
+          media(first: 40) {
             edges {
               node {
                 mediaContentType

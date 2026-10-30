@@ -56,13 +56,18 @@ function getDateRange(timeRange) {
 // misses and the dashboard reports 0 optimized images on a store with hundreds
 // genuinely optimized.
 //
-// metafields is also 250, not 20: the optimizer writes one metafield per image
-// plus a summary, so 20 silently truncates the records for any product with
-// more than nineteen images.
+// Shopify caps a single query's *requested* cost at 1,000 points and nested
+// connections multiply from the `first` arguments alone — the previous
+// products(first: 50) × media(first: 250) × metafields(first: 250) requested
+// tens of thousands of points and failed outright with MAX_COST_EXCEEDED on
+// every store. Budget now: per product ≈ 1 + media(2 + 40×2) + metafields(2 +
+// 60) = 145, × 6 products ≈ 872. metafields stays comfortably above media
+// (one record per image plus the summary) so records aren't truncated for any
+// product within the 40-image listing cap.
 async function fetchAllProducts(admin, cursor = null) {
   const query = `#graphql
     query GetProductsWithImages($cursor: String) {
-      products(first: 50, after: $cursor) {
+      products(first: 6, after: $cursor) {
         pageInfo {
           hasNextPage
           endCursor
@@ -72,7 +77,7 @@ async function fetchAllProducts(admin, cursor = null) {
             id
             title
             handle
-            media(first: 250) {
+            media(first: 40) {
               edges {
                 node {
                   ... on MediaImage {
@@ -87,7 +92,7 @@ async function fetchAllProducts(admin, cursor = null) {
                 }
               }
             }
-            metafields(first: 250, namespace: "image_optimization") {
+            metafields(first: 60, namespace: "image_optimization") {
               edges {
                 node {
                   key
