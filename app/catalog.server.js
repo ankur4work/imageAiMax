@@ -8,19 +8,10 @@
 // behind /api/catalog, which the page requests after it has already rendered.
 import { measureSizesMB } from './optimize.server';
 
-// How many images we list per product. Shopify rejects any single query whose
-// *requested* cost exceeds 1,000 points, and nested connections multiply:
-// products(first: 50) with media(first: 250) inside requests ~25,000 points and
-// fails outright with MAX_COST_EXCEEDED before touching any data. Budget here:
-// per product ≈ 1 + featuredImage 1 + media(2 + 40×2) + summary 1 = 85,
-// × 10 products ≈ 852. The optimizer itself still processes ALL of a product's
-// images (it queries one product at a time); only this listing is capped.
-export const MAX_MEDIA_PER_PRODUCT = 40;
-
 async function fetchProductPage(admin, cursor = null) {
   const query = `#graphql
     query GetProductsWithImages($cursor: String) {
-      products(first: 10, after: $cursor) {
+      products(first: 50, after: $cursor) {
         pageInfo { hasNextPage endCursor }
         edges {
           node {
@@ -29,10 +20,12 @@ async function fetchProductPage(admin, cursor = null) {
             handle
             status
             featuredImage { id url altText width height }
-            media(first: ${MAX_MEDIA_PER_PRODUCT}) {
+            media(first: 250) {
               edges { node { ... on MediaImage { id image { url altText width height } } } }
             }
-            summary: metafield(namespace: "image_optimization", key: "optimization_summary") { value }
+            metafields(first: 250, namespace: "image_optimization") {
+              edges { node { key value } }
+            }
           }
         }
       }
@@ -117,15 +110,18 @@ async function getAllProducts(admin) {
 }
 
 // Parse the optimization_summary metafield (totals written by the optimizer).
-// Selected directly as `summary: metafield(…)` — cost 1 instead of the 252 a
-// metafields(first: 250) connection would request.
 function parseSummary(product) {
-  if (!product.summary?.value) return null;
+  const mf = product.metafields.edges.find(e => e.node.key === 'optimization_summary');
+  if (!mf) return null;
   try {
-    return JSON.parse(product.summary.value);
+    return JSON.parse(mf.node.value);
   } catch {
     return null;
   }
+}
+
+function countProcessed(product) {
+  return product.metafields.edges.filter(e => e.node.key.startsWith('image_')).length;
 }
 
 export const EMPTY_STATS = {
@@ -175,13 +171,9 @@ export async function buildCatalog(admin) {
       const imageCount = images.length;
       const imagesWithAlt = images.filter(img => img.altText && img.altText.length > 10).length;
 
-      // The optimizer writes the summary on every batch, so a product without
-      // one has not been processed yet. Its totalImages (when present) is more
-      // accurate than the listing, which is capped at MAX_MEDIA_PER_PRODUCT.
       const summary = parseSummary(product);
-      const fullImageCount = Math.max(imageCount, summary?.totalImages || 0);
-      let processed = summary ? (summary.optimizedImages || 0) : 0;
-      processed = Math.min(processed, fullImageCount);
+      let processed = summary ? (summary.optimizedImages || 0) : countProcessed(product);
+      processed = Math.min(processed, imageCount);
 
       let totalOriginalSize;
       let totalOptimizedSize;
@@ -193,7 +185,7 @@ export async function buildCatalog(admin) {
         totalOptimizedSize = totalOriginalSize; // nothing saved yet
       }
 
-      const score = fullImageCount > 0 ? Math.round((processed / fullImageCount) * 100) : 0;
+      const score = imageCount > 0 ? Math.round((processed / imageCount) * 100) : 0;
       const sizeSavedMB = Math.max(0, totalOriginalSize - totalOptimizedSize);
       const compressionRate = totalOriginalSize > 0
         ? Math.max(0, Math.round((sizeSavedMB / totalOriginalSize) * 100))
@@ -204,7 +196,7 @@ export async function buildCatalog(admin) {
         title: product.title,
         handle: product.handle,
         status: product.status,
-        imageCount: fullImageCount,
+        imageCount,
         imagesWithAlt,
         optimizedImages: processed,
         score,

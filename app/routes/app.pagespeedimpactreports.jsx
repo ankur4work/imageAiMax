@@ -47,13 +47,18 @@ async function getAllProductHandles(admin) {
             title
             handle
             onlineStoreUrl
-            # This page only wants the summary, so select it directly (cost 1)
-            # instead of a metafields(first: N) connection — a connection large
-            # enough to guarantee the summary isn't truncated away by the
-            # per-image records blows Shopify's 1,000-point max query cost when
-            # multiplied by products(first: 250).
-            summary: metafield(namespace: "image_optimization", key: "optimization_summary") {
-              value
+            # 250, not 10. The optimizer writes one metafield per image plus
+            # optimization_summary, and this page only wants the summary — but
+            # "image_..." sorts before "optimization_summary", so on any
+            # product with ten or more images the summary falls outside the
+            # page and getOptimizationData() below sees nothing to report.
+            metafields(first: 250, namespace: "image_optimization") {
+              edges {
+                node {
+                  key
+                  value
+                }
+              }
             }
           }
         }
@@ -180,12 +185,17 @@ async function runPageSpeedTest(url) {
  * (written by the optimizer after actual compression runs).
  */
 function getOptimizationData(product) {
-  if (!product.summary?.value) {
+  const metafields = product.metafields?.edges || [];
+  const optimizationSummary = metafields.find(
+    mf => mf.node.key === 'optimization_summary'
+  );
+
+  if (!optimizationSummary) {
     return null;
   }
 
   try {
-    const data = JSON.parse(product.summary.value);
+    const data = JSON.parse(optimizationSummary.node.value);
 
     return {
       totalSizeSavedMB: parseFloat((data.totalSizeSavedMB || 0).toFixed(2)),
